@@ -56,9 +56,6 @@ public class WorldCommand {
                 .getPlayers(p -> true)
                 .forEach(player -> player.connection.disconnect(Component.literal("Server Shut Down")));
 
-        String worldName = source.getServer().getWorldData().getLevelName();
-        File worldFile = source.getServer().getFile(String.format("./%s", worldName));
-
         File worldsFile = source.getServer().getFile("./worlds");
         File[] worldsFiles = getWorldsFiles(worldsFile);
         if(worldsFiles == null) return 0;
@@ -82,22 +79,22 @@ public class WorldCommand {
             }
         }
 
-        if (!IOMethods.deleteDirectory(worldFile)) {
-            LOGGER.error(String.format("Error: Unable to delete world file %s.", worldName));
-            return 0;
-        }
-
         source.getServer().halt(false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static File[] getWorldsFiles(File worldsFile) {
-        if(!worldsFile.exists()) worldsFile.mkdir();
+        if(!worldsFile.exists() && worldsFile.mkdir()) LOGGER.error("Could not create worlds folder");;
         File[] worldsFiles = worldsFile.listFiles();
         if(worldsFiles == null) {
             LOGGER.error("Worlds file not found.");
         }
         return worldsFiles;
+    }
+
+    public static File[] getPlayerDataFiles(File playerDataFile) {
+        if(!playerDataFile.exists() && playerDataFile.mkdir()) LOGGER.error("Could not create playerData folder");
+        return playerDataFile.listFiles();
     }
 
     public static boolean checkWorldConfig(File worldConfig) {

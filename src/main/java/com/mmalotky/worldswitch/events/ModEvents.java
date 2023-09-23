@@ -1,5 +1,6 @@
 package com.mmalotky.worldswitch.events;
 
+import com.mmalotky.worldswitch.IO.IOMethods;
 import com.mmalotky.worldswitch.WorldSwitch;
 import com.mmalotky.worldswitch.commands.WorldCommand;
 import com.mojang.logging.LogUtils;
@@ -9,6 +10,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -26,6 +28,16 @@ public class ModEvents {
     @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent event) {
         new WorldCommand(event.getDispatcher());
+    }
+
+    @SubscribeEvent
+    public static void deleteWorld(ServerStoppedEvent event) {
+        String worldName = event.getServer().getWorldData().getLevelName();
+        File worldFile = event.getServer().getFile(String.format("./%s", worldName));
+
+        if (!IOMethods.deleteDirectory(worldFile)) {
+            LOGGER.error(String.format("Error: Unable to delete world file %s.", worldName));
+        }
     }
 
     @SubscribeEvent

@@ -23,7 +23,7 @@ public class WorldSwitch
 {
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
-    public static final String MOD_ID = "com/mmalotky/worldswitch";
+    public static final String MOD_ID = "worldswitch";
 
     public WorldSwitch() {
         // Register the setup method for modloading
@@ -36,6 +36,9 @@ public class WorldSwitch
     private void setup(final FMLCommonSetupEvent event) {
         // some preinit code
         LOGGER.info("HELLO FROM PREINIT");
+
+        LOGGER.info("Checking Player Data");
+        WorldCommand.getPlayerDataFiles(new File("./playerData"));
 
         LOGGER.info("Checking for WorldSet");
         File worldConfig = new File("./worldConfig.cfg");
