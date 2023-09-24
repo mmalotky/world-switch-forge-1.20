@@ -36,11 +36,16 @@ public class WorldCommand {
 
     private int saveWorld(CommandSourceStack source, String world) {
         File worldsFile = source.getServer().getFile("./worlds");
-        if(getWorldsFiles(worldsFile) == null) return 0;
+        if(getWorldsFiles(worldsFile) == null) {
+            source.sendFailure(Component.literal("IO Failure"));
+            return 0;
+        }
 
         Path destination = Path.of(String.format("%s/%s",worldsFile.getAbsolutePath(),world));
         if(world.equals("new") || Files.exists(destination)) {
-            LOGGER.error(String.format("%s is not available", world));
+            String msg = String.format("%s is not available", world);
+            LOGGER.error(msg);
+            source.sendFailure(Component.literal(msg));
             return 0;
         }
 
@@ -48,36 +53,46 @@ public class WorldCommand {
         Path origin = source.getServer().getFile(String.format("./%s", worldName)).toPath();
         IOMethods.copyDirectory(origin, destination);
 
+        source.sendSystemMessage(Component.literal(String.format("World '%s' saved", world)));
         return Command.SINGLE_SUCCESS;
     }
     private int setWorld(CommandSourceStack source, String world) {
-        LOGGER.info("Disconnecting Players");
-        source.getLevel()
-                .getPlayers(p -> true)
-                .forEach(player -> player.connection.disconnect(Component.literal("Server Shut Down")));
-
         File worldsFile = source.getServer().getFile("./worlds");
         File[] worldsFiles = getWorldsFiles(worldsFile);
-        if(worldsFiles == null) return 0;
+        if(worldsFiles == null) {
+            source.sendFailure(Component.literal("IO Failure"));
+            return 0;
+        }
 
         if(!world.equals("new") && Arrays.stream(worldsFiles).noneMatch(file -> file.getName().equals(world))) {
-            LOGGER.error(String.format("World %s not recognised", world));
+            String msg = String.format("World '%s' not recognised", world);
+            LOGGER.error(msg);
+            source.sendFailure(Component.literal(msg));
             return 0;
         }
 
         if(!world.equals("new")) {
-            LOGGER.info(String.format("Updating worldConf.cfg for world %s", world));
+            LOGGER.info(String.format("Updating worldConf.cfg for world '%s'", world));
             File worldConfig = new File("./worldConfig.cfg");
-            if(!checkWorldConfig(worldConfig)) return 0;
+            if(!checkWorldConfig(worldConfig)) {
+                source.sendFailure(Component.literal("IO Failure"));
+                return 0;
+            }
 
             try(PrintWriter writer = new PrintWriter(worldConfig)) {
                 writer.println(world);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
+                source.sendFailure(Component.literal("IO error"));
                 e.printStackTrace();
                 return 0;
             }
         }
+
+        LOGGER.info("Disconnecting Players");
+        source.getLevel()
+                .getPlayers(p -> true)
+                .forEach(player -> player.connection.disconnect(Component.literal("Server Shut Down")));
 
         source.getServer().halt(false);
         return Command.SINGLE_SUCCESS;
