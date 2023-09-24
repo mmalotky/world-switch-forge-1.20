@@ -9,7 +9,7 @@ import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -41,11 +41,13 @@ public class ModEvents {
     }
 
     @SubscribeEvent
-    public static void injectPlayerData(ServerStartingEvent event) {
+    public static void injectPlayerData(ServerStartedEvent event) {
         String serverDirectory = event.getServer().getServerDirectory().getAbsolutePath();
         String world = event.getServer().getWorldData().getLevelName();
 
-        Path playerData = Path.of(serverDirectory + "/playerData/playerdata");
+        Path playerData = Path.of(serverDirectory + "/playerData");
+        WorldCommand.setupPlayerDataFiles();
+
         Path link = Path.of(serverDirectory + String.format("/%s/playerdata", world));
         if(Files.isSymbolicLink(link)) return;
 

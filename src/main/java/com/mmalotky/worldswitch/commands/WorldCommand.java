@@ -92,9 +92,9 @@ public class WorldCommand {
         return worldsFiles;
     }
 
-    public static File[] getPlayerDataFiles(File playerDataFile) {
+    public static void setupPlayerDataFiles() {
+        File playerDataFile = new File("./playerData");
         if(!playerDataFile.exists() && playerDataFile.mkdir()) LOGGER.error("Could not create playerData folder");
-        return playerDataFile.listFiles();
     }
 
     public static boolean checkWorldConfig(File worldConfig) {
